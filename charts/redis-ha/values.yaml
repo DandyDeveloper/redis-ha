@@ -3,7 +3,7 @@
 ##
 image:
   repository: redis
-  tag: 6.0.7-alpine
+  tag: 6.2.5-alpine
   pullPolicy: IfNotPresent
 
 ## Reference to one or more secrets to be used when pulling images
@@ -58,7 +58,7 @@ haproxy:
   replicas: 3
   image:
     repository: haproxy
-    tag: 2.0.4
+    tag: 2.4.2
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
@@ -408,7 +408,7 @@ affinity: |
 exporter:
   enabled: false
   image: oliver006/redis_exporter
-  tag: v1.15.1
+  tag: v1.24.0
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
