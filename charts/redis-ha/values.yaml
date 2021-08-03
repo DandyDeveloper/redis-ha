@@ -120,6 +120,10 @@ haproxy:
       # labels: {}
       # Set timeout for scrape
       # timeout: 10s
+      # Set metricRelabelings to be applied before ingestion
+      # metricRelabelings: []
+      # Set relabelings to be applied before scraping and ingestion
+      # relabelings: []
   init:
     resources: {}
   timeout:
@@ -468,6 +472,10 @@ exporter:
     # labels: {}
     # Set timeout for scrape
     # timeout: 10s
+    # Set metricRelabelings to be applied before ingestion
+    # metricRelabelings: []
+    # Set relabelings to be applied before scraping and ingestion
+    # relabelings: []
 
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop

@@ -23,6 +23,14 @@ spec:
 {{- if .Values.exporter.serviceMonitor.timeout }}
     scrapeTimeout: {{ .Values.exporter.serviceMonitor.timeout }}
 {{- end }}
+{{- if .Values.exporter.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+{{ tpl (toYaml .Values.exporter.serviceMonitor.metricRelabelings | indent 4) . }}
+{{- end }}
+{{- if .Values.exporter.serviceMonitor.relabelings }}
+    relabelings:
+{{ toYaml .Values.exporter.serviceMonitor.relabelings | indent 4 }}
+{{- end }}
   jobLabel: {{ template "redis-ha.fullname" . }}
   namespaceSelector:
     matchNames:

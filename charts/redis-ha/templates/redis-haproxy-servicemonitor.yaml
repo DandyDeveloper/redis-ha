@@ -22,6 +22,14 @@ spec:
 {{- if .Values.haproxy.metrics.serviceMonitor.timeout }}
     scrapeTimeout: {{ .Values.haproxy.metrics.serviceMonitor.timeout }}
 {{- end }}
+{{- if .Values.haproxy.metrics.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+{{ tpl (toYaml .Values.haproxy.metrics.serviceMonitor.metricRelabelings | indent 4) . }}
+{{- end }}
+{{- if .Values.haproxy.metrics.serviceMonitor.relabelings }}
+    relabelings:
+{{ toYaml .Values.haproxy.metrics.serviceMonitor.relabelings | indent 4 }}
+{{- end }}
   jobLabel: {{ template "redis-ha.fullname" . }}-haproxy
   namespaceSelector:
     matchNames:
