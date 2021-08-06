@@ -6,7 +6,7 @@
 {{- else }}
     dir "/data"
     port {{ .Values.redis.port }}
-    {{- if .Values.sentinel.tlsPort }}
+    {{- if .Values.redis.tlsPort }}
     tls-port {{ .Values.redis.tlsPort }}
     tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
     tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
