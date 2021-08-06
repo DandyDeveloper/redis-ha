@@ -569,6 +569,13 @@ restore:
   timeout: 600
   # Set existingSecret to true to use secret specified in existingSecret above
   existingSecret: false
+  # Set a custom script for the init container to use:
+  customScript: false
+  # To add a custom script, remove false from the above line and add script below:
+  #   - >-
+  #       1st line of script
+  #       && 2nd line of script
+  #       && ...
   s3:
     source: false
     # If using existingSecret, that secret must contain:

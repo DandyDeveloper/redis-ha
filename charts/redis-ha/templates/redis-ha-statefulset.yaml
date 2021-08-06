@@ -182,12 +182,16 @@ spec:
         - sh
         args:
         - "-c"
+        {{- if .Values.restore.customScript }}
+{{ toYaml .Values.restore.customScript | indent 8 }}
+        {{- else }}
         - "timeout -t {{ .Values.restore.timeout }} \
              s3cmd get {{ if .Values.restore.s3.region }}--region {{ .Values.restore.s3.region }} {{ end }}--force '{{ .Values.restore.s3.source }}' /data/dump.rdb_ \
            && test -s /data/dump.rdb_ \
            && if test -s /data/dump.rdb; \
               then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
            && mv -v /data/dump.rdb_ /data/dump.rdb"
+        {{- end }}
         envFrom:
         - secretRef:
           {{- if .Values.restore.existingSecret }}
@@ -209,6 +213,9 @@ spec:
         - sh
         args:
         - "-c"
+        {{- if .Values.restore.customScript }}
+{{ toYaml .Values.restore.customScript | indent 8 }}
+        {{- else }}
         - "rm -f key && echo -e \"${SSH_KEY}\" >key \
            && chmod 400 key \
            && timeout {{ .Values.restore.timeout }} \
@@ -221,6 +228,7 @@ spec:
            && if test -s /data/dump.rdb; \
               then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
            && mv -v /data/dump.rdb_ /data/dump.rdb"
+        {{- end }}
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
