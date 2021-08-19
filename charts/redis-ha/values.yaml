@@ -591,3 +591,6 @@ extraContainers: []
 extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
+
+# Labels added here are applied to all created resources
+additionalLabels: {}

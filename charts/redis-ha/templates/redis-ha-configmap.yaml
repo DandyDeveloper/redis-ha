@@ -11,6 +11,9 @@ metadata:
     {{- range $key, $value := .Values.configmap.labels }}
     {{ $key }}: {{ $value | toString }}
     {{- end }}
+    {{- range $key, $value := .Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 data:
   redis.conf: |
 {{- include "config-redis.conf" . }}

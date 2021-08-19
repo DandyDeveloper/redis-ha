@@ -11,6 +11,9 @@ metadata:
 {{- if .Values.exporter.serviceMonitor.namespace }}
   namespace: {{ .Values.exporter.serviceMonitor.namespace | quote }}
 {{- end }}
+  {{- range $key, $value := .Values.additionalLabels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
 spec:
   endpoints:
   - targetPort: {{ .Values.exporter.port }}

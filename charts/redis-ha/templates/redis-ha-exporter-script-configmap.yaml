@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
+    {{- range $key, $value := .Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 data:
   script: {{ toYaml .Values.exporter.script | indent 2 }}
 {{- end }}

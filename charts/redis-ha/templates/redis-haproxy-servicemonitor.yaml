@@ -10,6 +10,9 @@ metadata:
 {{- if .Values.haproxy.metrics.serviceMonitor.namespace }}
   namespace: {{ .Values.haproxy.metrics.serviceMonitor.namespace | quote }}
 {{- end }}
+  {{- range $key, $value := .Values.additionalLabels }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
 spec:
   endpoints:
   - targetPort: {{ .Values.haproxy.metrics.port }}

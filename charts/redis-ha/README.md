@@ -218,6 +218,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraContainers`         | Extra containers to include in StatefulSet                                                                                                                                                               |`[]`|
 | `extraInitContainers`     | Extra init containers to include in StatefulSet                                                                                                                                                          |`[]`|
 | `extraVolumes`            | Extra volumes to include in StatefulSet                                                                                                                                                                  |`[]`|
+| `additionalLabels`        | Labels that should be applied to all created resources                                                                                                                                                   |`{}`|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

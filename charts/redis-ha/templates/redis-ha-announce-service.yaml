@@ -11,6 +11,9 @@ metadata:
   namespace: {{ $namespace | quote}}
   labels:
 {{ include "labels.standard" $root | indent 4 }}
+    {{- range $key, $value := $root.Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
   {{- if $root.Values.serviceAnnotations }}

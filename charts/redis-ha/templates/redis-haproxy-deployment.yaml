@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
+    {{- range $key, $value := .Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   strategy:
     type: RollingUpdate
@@ -24,6 +27,9 @@ spec:
         revision: "{{ .Release.Revision }}"
         {{- range $key, $value := .Values.haproxy.labels }}
         {{ $key }}: {{ $value | toString }}
+        {{- end }}
+        {{- range $key, $value := .Values.additionalLabels }}
+        {{ $key }}: {{ $value | quote }}
         {{- end }}
       annotations:
       {{- if and (.Values.haproxy.metrics.enabled) (not .Values.haproxy.metrics.serviceMonitor.enabled)  }}

@@ -8,6 +8,9 @@ metadata:
     release: {{ .Release.Name }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app: {{ template "redis-ha.fullname" . }}
+    {{- range $key, $value := .Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 data:
   redis_liveness.sh: |
 {{- include "redis_liveness.sh" . }}

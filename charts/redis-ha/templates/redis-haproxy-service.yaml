@@ -7,6 +7,9 @@ metadata:
   labels:
 {{ include "labels.standard" . | indent 4 }}
     component: {{ template "redis-ha.fullname" . }}-haproxy
+    {{- range $key, $value := .Values.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
   annotations:
   {{- if .Values.haproxy.service.annotations }}
 {{ toYaml .Values.haproxy.service.annotations | indent 4 }}
