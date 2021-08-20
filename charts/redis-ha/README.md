@@ -218,6 +218,13 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraContainers`         | Extra containers to include in StatefulSet                                                                                                                                                               |`[]`|
 | `extraInitContainers`     | Extra init containers to include in StatefulSet                                                                                                                                                          |`[]`|
 | `extraVolumes`            | Extra volumes to include in StatefulSet                                                                                                                                                                  |`[]`|
+| `networkPolicy.enabled`                   | Create NetworkPolicy for Redis StatefulSet pods                                                                                                                                          |`false`|
+| `networkPolicy.labels`                    | Labels for NetworkPolicy                                                                                                                                                                 |`{}`|
+| `networkPolicy.annotations`               | Annotations for NetworkPolicy                                                                                                                                                            |`{}`|
+| `networkPolicy.ingressRules[].selectors`  | Label selector query to define resources for this ingress rule                                                                                                                           |`[]`|
+| `networkPolicy.ingressRules[].ports`      | The destination ports for the ingress rule                                                                                                                                               |`[{port: redis.port, protocol: TCP}, {port: sentinel.port, protocol: TCP}]`|
+| `networkPolicy.egressRules[].selectors`   | Label selector query to define resources for this egress rule                                                                                                                            |`[]`|
+| `networkPolicy.egressRules[].ports`       | The destination ports for the egress rule                                                                                                                                                |``|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -299,3 +306,35 @@ A such case could happen if the orchestator is pending the nomination of redis p
 Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
 
 PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
+
+## Network policies
+
+If `networkPolicy.enabled` is set to `true`, then a `NetworkPolicy` resource is created with default rules to allow inter-Redis and Sentinel connectivity.
+This is a requirement for Redis Pods to come up successfully.
+
+You will need to define `ingressRules` to permit your application connectivity to Redis.
+The `selectors` block should be in the format of a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors).
+Templating is also supported in the selectors.
+See such a configuration below.
+
+```yaml
+networkPolicy: true
+  ingressRules:
+    - selectors:
+      - namespaceSelector:
+          matchLabels:
+            name: my-redis-client-namespace
+        podSelector:
+          matchLabels:
+            # template example
+            app: |-
+              {{- .App.Name }}
+      ## ports block is optional (defaults to below), define the block to override the defaults
+      # ports:
+      #   - port: 6379
+      #     protocol: TCP
+      #   - port: 26379
+      #     protocol: TCP
+```
+
+Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.

@@ -591,3 +591,29 @@ extraContainers: []
 extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
+
+networkPolicy:
+  ## whether NetworkPolicy for Redis StatefulSets should be created
+  ## when enabled, inter-Redis connectivity is created
+  enabled: false
+  annotations: {}
+  labels: {}
+  ## user defines ingress rules that Redis should permit into
+  ## uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+  ingressRules: []
+    # - selectors:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         name: my-redis-client-namespace
+    #     podSelector:
+    #       matchLabels:
+    #         application: redis-client
+    ## if ports is not defined then it defaults to the ports defined for enabled services (redis, sentinel)
+    #   ports:
+    #     - port: 6379
+    #       protocol: TCP
+    #     - port: 26379
+    #       protocol: TCP
+        
+  ## user can define egress rules too, uses the same structure as ingressRules
+  egressRules: [] 
