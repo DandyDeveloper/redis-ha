@@ -71,27 +71,7 @@
 {{- end }}
 {{- end }}
 
-{{- define "config-init.sh" }}
-    echo "$(date) Start..."
-    HOSTNAME="$(hostname)"
-    {{- if .Values.ro_replicas }}
-    RO_REPLICAS="{{ .Values.ro_replicas }}"
-    {{- end }}
-    INDEX="${HOSTNAME##*-}"
-    SENTINEL_PORT={{ .Values.sentinel.port }}
-    MASTER=''
-    MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
-    QUORUM="{{ .Values.sentinel.quorum }}"
-    REDIS_CONF=/data/conf/redis.conf
-    REDIS_PORT={{ .Values.redis.port }}
-    REDIS_TLS_PORT={{ .Values.redis.tlsPort }}
-    SENTINEL_CONF=/data/conf/sentinel.conf
-    SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
-    SERVICE={{ template "redis-ha.fullname" . }}
-    SENTINEL_TLS_REPLICATION_ENABLED={{ default false .Values.sentinel.tlsReplication }}
-    REDIS_TLS_REPLICATION_ENABLED={{ default false .Values.redis.tlsReplication }}
-    set -eu
-
+{{- define "lib.sh" }}
     sentinel_get_master() {
     set +e
         if [ "$SENTINEL_PORT" -eq 0 ]; then
@@ -303,6 +283,45 @@
         echo "${host}"
     }
 
+    identify_announce_ip() {
+        echo "Identify announce ip for this pod.."
+        echo "  using (${SERVICE}-announce-${INDEX}) or (${SERVICE}-server-${INDEX})"
+        ANNOUNCE_IP=$(getent_hosts | awk '{ print $1 }')
+        echo "  identified announce (${ANNOUNCE_IP})"
+    }
+{{- end }}
+
+{{- define "vars.sh" }}
+    HOSTNAME="$(hostname)"
+    {{- if .Values.ro_replicas }}
+    RO_REPLICAS="{{ .Values.ro_replicas }}"
+    {{- end }}
+    INDEX="${HOSTNAME##*-}"
+    SENTINEL_PORT={{ .Values.sentinel.port }}
+    ANNOUNCE_IP=''
+    MASTER=''
+    MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
+    QUORUM="{{ .Values.sentinel.quorum }}"
+    REDIS_CONF=/data/conf/redis.conf
+    REDIS_PORT={{ .Values.redis.port }}
+    REDIS_TLS_PORT={{ .Values.redis.tlsPort }}
+    SENTINEL_CONF=/data/conf/sentinel.conf
+    SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
+    SERVICE={{ template "redis-ha.fullname" . }}
+    SENTINEL_TLS_REPLICATION_ENABLED={{ default false .Values.sentinel.tlsReplication }}
+    REDIS_TLS_REPLICATION_ENABLED={{ default false .Values.redis.tlsReplication }}
+    ROLE=''
+    REDIS_MASTER=''
+{{- end }}
+
+{{- define "config-init.sh" }}
+    echo "$(date) Start..."
+    {{- include "vars.sh" . }}
+
+    set -eu
+
+    {{- include "lib.sh" . }}
+
     mkdir -p /data/conf/
 
     echo "Initializing config.."
@@ -311,10 +330,8 @@
     # where is redis master
     identify_master
 
-    echo "Identify announce ip for this pod.."
-    echo "  using (${SERVICE}-announce-${INDEX}) or (${SERVICE}-server-${INDEX})"
-    ANNOUNCE_IP=$(getent_hosts | awk '{ print $1 }')
-    echo "  identified announce (${ANNOUNCE_IP})"
+    identify_announce_ip
+
     if [ -z "${ANNOUNCE_IP}" ]; then
         "Error: Could not resolve the announce ip for this pod."
         exit 1
@@ -346,6 +363,68 @@
     fi
 
     echo "$(date) Ready..."
+{{- end }}
+
+{{- define "fix-split-brain.sh" }}
+    {{- include "vars.sh" . }}
+
+    set -eu
+
+    {{- include "lib.sh" . }}
+
+    redis_role() {
+    set +e
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            ROLE=$(redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep role | sed 's/role://' | sed 's/\r//')
+        else
+            ROLE=$(redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" info | grep role | sed 's/role://' | sed 's/\r//')
+        fi
+    set -e
+    }
+
+    identify_redis_master() {
+    set +e
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            REDIS_MASTER=$(redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep master_host | sed 's/master_host://' | sed 's/\r//')
+        else
+            REDIS_MASTER=$(redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" info | grep master_host | sed 's/master_host://' | sed 's/\r//')
+        fi
+    set -e
+    }
+
+    reinit() {
+    set +e
+        sh /readonly-config/init.sh
+
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            echo "shutdown" | redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }}
+        else
+            echo "shutdown" | redis-cli {{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}"
+        fi
+    set -e
+    }
+
+    identify_announce_ip
+
+    while true; do
+        sleep 180
+
+        # where is redis master
+        identify_master
+
+        if [ "$MASTER" == "$ANNOUNCE_IP" ]; then
+            redis_role
+            if [ "$ROLE" != "master" ]; then
+                reinit
+            fi
+        else
+            identify_redis_master
+            if [ "$REDIS_MASTER" != "$MASTER" ]; then
+                reinit
+            fi
+        fi
+    done
+
 {{- end }}
 
 {{- define "config-haproxy.cfg" }}
