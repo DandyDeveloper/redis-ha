@@ -393,7 +393,11 @@
     # decide redis backend to use
     #master
     frontend ft_redis_master
+      {{- if .Values.haproxy.tls.enabled }}
+      bind *:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }}
+      {{ else }}
       bind *:{{ $root.Values.redis.port }}
+      {{- end }}
       use_backend bk_redis_master
     {{- if .Values.haproxy.readOnly.enabled }}
     #slave

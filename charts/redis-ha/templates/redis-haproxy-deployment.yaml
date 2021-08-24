@@ -97,6 +97,7 @@ spec:
 {{ toYaml .Values.haproxy.securityContext | indent 8 }}
       containers:
       - name: haproxy
+        serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
     {{- if or .Values.auth .Values.sentinel.auth}}
@@ -138,7 +139,7 @@ spec:
           periodSeconds: 3
         ports:
         - name: redis
-          containerPort: {{ default "6379" .Values.redis.port }}
+          containerPort: {{ default "6379" .Values.haproxy.containerPort }}
         {{- if .Values.haproxy.readOnly.enabled }}
         - name: readonlyport
           containerPort: {{ default "6380" .Values.haproxy.readOnly.port }}
@@ -154,12 +155,21 @@ spec:
           mountPath: /usr/local/etc/haproxy
         - name: shared-socket
           mountPath: /run/haproxy
+{{- if .Values.haproxy.tls.enabled }}
+        - name: pemfile
+          mountPath: {{ .Values.haproxy.tls.certMountPath }}
+{{- end }}
         lifecycle:
 {{ toYaml .Values.haproxy.lifecycle | indent 10 }}
 {{- if .Values.haproxy.priorityClassName }}
       priorityClassName: {{ .Values.haproxy.priorityClassName }}
 {{- end }}
       volumes:
+{{- if .Values.haproxy.tls.enabled }}
+      - name: pemfile
+        secret:
+          secretName: {{ .Values.haproxy.tls.secretName }}
+{{- end }}
       - name: config-volume
         configMap:
           name: {{ template "redis-ha.fullname" . }}-configmap

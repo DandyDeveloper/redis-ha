@@ -6,7 +6,7 @@ keywords:
 - redis
 - keyvalue
 - database
-version: 4.12.21
+version: 4.12.22
 appVersion: 6.0.7
 description: This Helm chart provides a highly available Redis implementation with a master/slave configuration and uses Sentinel sidecars for failover management
 icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
