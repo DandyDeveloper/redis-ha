@@ -141,6 +141,7 @@ haproxy:
     client: 330s
     check: 2s
   checkInterval: 1s
+  checkFall: 1
 
   securityContext:
     runAsUser: 1000

@@ -422,7 +422,7 @@
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
       use-server R{{ $i }} if { srv_is_up(R{{ $i }}) } { nbsrv(check_if_redis_is_master_{{ $i }}) ge 2 }
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall 1 rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- end }}
     {{- if .Values.haproxy.readOnly.enabled }}
     backend bk_redis_slave
@@ -444,7 +444,7 @@
       tcp-check send QUIT\r\n
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall 1 rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- end }}
     {{- end }}
     {{- if .Values.haproxy.metrics.enabled }}
