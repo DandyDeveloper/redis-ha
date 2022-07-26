@@ -148,6 +148,22 @@ haproxy:
       # labels: {}
       # Set timeout for scrape
       # timeout: 10s
+      #
+      # RelabelConfigs to apply to samples before scraping.
+      relabelings: []
+      # - sourceLabels: [__meta_kubernetes_pod_node_name]
+      #   separator: ;
+      #   regex: ^(.*)$
+      #   targetLabel: nodename
+      #   replacement: $1
+      #   action: replace
+
+      # MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+      metricRelabelings: []
+      # - action: keep
+      #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+      #   sourceLabels: [__name__]
+
   init:
     resources: {}
   timeout:
@@ -507,6 +523,22 @@ exporter:
     # labels: {}
     # Set timeout for scrape
     # timeout: 10s
+
+    # RelabelConfigs to apply to samples before scraping.
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+
+    # MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
 
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop
