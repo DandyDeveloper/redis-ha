@@ -154,8 +154,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -165,8 +165,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -200,8 +200,8 @@ spec:
            && mv -v /data/dump.rdb_ /data/dump.rdb"
         envFrom:
         - secretRef:
-          {{- if .Values.restore.existingSecret }}
-            name: {{ .Values.existingSecret }}
+          {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }} # This one is suspicious, one would expect restore.existingSecret as well
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -234,8 +234,8 @@ spec:
         securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         envFrom:
         - secretRef:
-          {{- if .Values.restore.existingSecret }}
-            name: {{ .Values.existingSecret }}
+          {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }} # This one is suspicious, one would expect restore.existingSecret as well
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -260,8 +260,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -331,8 +331,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -342,8 +342,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -416,8 +416,8 @@ spec:
         - name: AUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
+            {{- if tpl (.Values.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
@@ -427,8 +427,8 @@ spec:
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
-            {{- if .Values.sentinel.existingSecret }}
-              name: {{ .Values.sentinel.existingSecret }}
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
             {{- else }}
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
@@ -467,8 +467,8 @@ spec:
           - name: REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
-              {{- if .Values.existingSecret }}
-                name: {{ .Values.existingSecret }}
+              {{- if tpl (.Values.existingSecret | default "" ) . }}
+                name: {{ tpl (.Values.existingSecret | default "" ) . }}
               {{- else }}
                 name: {{ template "redis-ha.fullname" . }}
               {{- end }}
@@ -541,8 +541,8 @@ spec:
       {{- if .Values.redis.tlsPort }}
       - name: tls-certs
         secret:
-          {{- if .Values.tls.secretName }}
-          secretName: {{ .Values.tls.secretName }}
+          {{- if tpl (.Values.tls.secretName | default "" ) . }}
+          secretName: {{ tpl (.Values.tls.secretName | default "" ) . }}
           {{- else }}
           secretName: {{ template "redis-ha.fullname" . }}-tls-secret
           {{- end }}

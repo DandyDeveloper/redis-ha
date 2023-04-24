@@ -71,6 +71,7 @@ haproxy:
   ## Enable TLS termination on HAproxy, This will create a volume mount
   tls:
     enabled: false
+    ## Supports templates like "{{ .Release.Name }}-haproxy-tls"
     secretName: ""
     keyName:
     certMountPath: /tmp/
@@ -331,7 +332,8 @@ sentinel:
 
   # password: password
 
-  ## Use existing secret containing key `authKey` (ignores sentinel.password)
+  ## Use existing secret containing key `authKey` (ignores sentinel.password).
+  ## Supports templates like "{{ .Release.Name }}-sentinel-creds"
   # existingSecret: sentinel-secret
 
   ## Defines the key holding the sentinel password in existing secret.
@@ -555,6 +557,7 @@ auth: false
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
 ## Can also store AWS S3 or SSH secrets in this secret
+## Supports templates like "{{ .Release.Name }}-creds"
 # existingSecret:
 
 ## Defines the key holding the redis password in existing secret.
@@ -595,7 +598,8 @@ emptyDir: {}
 tls:
   ## Fill the name of secret if you want to use your own TLS certificates.
   ## The secret should contains keys named by "tls.certFile" - the certificate, "tls.keyFile" - the private key, "tls.caCertFile" - the certificate of CA and "tls.dhParamsFile" - the dh parameter file
-  ## These secret will be genrated using files from certs folder if the secretName is not set and redis.tlsPort is set
+  ## Supports templates like "{{ .Release.Name }}-tls"
+  ## This secret will be generated using files from certs folder if the secretName is not set and redis.tlsPort is set
   # secretName: tls-secret
 
   ## Name of certificate file
