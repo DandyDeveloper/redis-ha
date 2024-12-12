@@ -37,6 +37,11 @@ spec:
           protocol: TCP
     - to:
         - namespaceSelector: {}
+        - ipBlock:
+            # Cloud Provider often uses the local link local range to host managed DNS resolvers.
+            # We need to allow this range to ensure that the Redis pods can resolve DNS.
+            # Example architecture for GCP Cloud DNS: https://cloud.google.com/kubernetes-engine/docs/how-to/cloud-dns#architecture
+            cidr: 169.254.0.0/16
       ports:
         - port: 53
           protocol: UDP
