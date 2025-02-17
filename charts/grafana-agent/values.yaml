@@ -2,15 +2,21 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 image:
+  # -- Grafana Agent image
   repository: grafana/agent
+  # -- Image pull policy
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# -- Pull secret for private repository
 imagePullSecrets: []
+# -- Release name override
 nameOverride: ""
+# -- Full name overrie for release
 fullnameOverride: ""
 
+# -- Extra Volume mounts
 extraVolumeMounts: []
 # Scrape k8s logs
   # - name: containers
@@ -20,6 +26,7 @@ extraVolumeMounts: []
   #  mountPath: /var/log/pods
   #  readOnly: true
 
+# -- Extra Volumes
 extraVolumes: []
 # Scrape k8s logs
   #- name: containers
@@ -29,34 +36,41 @@ extraVolumes: []
   #  hostPath:
   #    path: /var/log/pods
 
-# Only relevant if scrapingMode.enabled is true
-# Delcares # of replicas for Grafana Agent deployment
+# -- Number of replicas of Grafana Agent deployment (only relevant for service scraping mode)
 replicaCount: 3
 
+# -- Update strategy
 updateStrategy: Recreate
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- Pod annotations
 podAnnotations: {}
 
+# -- Pod Security Context
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- Container Security Context
+# @default -- see values.yaml
 securityContext:
   privileged: true
   runAsUser: 0
 
 service:
+  # -- Service Type
   type: ClusterIP
+  # -- Kubernetes service port
   port: 80
 
+# -- Kubernetes pod resources
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -69,22 +83,30 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Pod node selector
 nodeSelector: {}
 
+# -- Pod tolerations
 tolerations:
   - effect: NoSchedule
     operator: Exists
 
+# -- Affinity rules
 affinity: {}
 
 # Currently only supports Prometheus 'configs'.
 # Other telemetary options will be added overtime.
 config:
+  # -- Server log_level
   logLevel: info
+  # -- An existing ConfigMap entity that already exists, or is deployed by a parent chart.
   # Populate this to provide an existing config for Grafana Agent. This disables the charts configMap.
   existingConfigMap: ""
   loki:
+    # -- Enable Loki config
     enabled: true
+    # -- Loki config content
+    # @default -- see values.yaml
     configs: |
       positions_directory: /tmp/loki-positions
       configs:
@@ -99,7 +121,10 @@ config:
               job: varlogs
               __path__: /var/log/*log
   tempo:
+    # -- Enable Tempo config
     enabled: true
+    # -- Tempo config content
+    # @default -- see values.yaml
     configs: |
       - name: default
         receivers:
@@ -124,15 +149,23 @@ config:
           processes: true
           roots: true
   prometheus:
+    # -- Enable Prometheus config
     enabled: true
+    # -- Directory mount point for Grafana Agent WAL
     walDir: /var/lib/agent/data
+    # -- Global scrape interval
     scrapeInterval: 15s
+    # -- External labels
     externalLabels: {}
     remoteWrite:
+      # -- URL for the upstream federated Prometheus / Cortex instance
       url: http://cortex.default.svc.cluster.local
+      # -- Remote write username/password
       auth:
         # username: ""
         # password: ""
+    # -- Scrape configs / General configs for the Prometheus scraping
+    # @default -- see values.yaml
     configs: |
       - name: agent
         remote_write:
@@ -156,8 +189,11 @@ config:
 # Enables separation of ConfigMap for Agent expectations
 # Also enables Consul for hash ring
 scrapingServiceMode:
+  # -- Enabled scraping service mode. See below for more details
   enabled: false
 
+# -- Configure consul subchart resp. dependency chart
+# @default -- see values.yaml
 # Only deployed when scrapingServiceMode.enabled is true
 consul:
   client:
